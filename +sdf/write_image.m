@@ -1,4 +1,4 @@
-function write_image(filename, data)
+function write_image(filename, data, options)
 
 image = data.image;
 headers = data.headers;
@@ -11,7 +11,7 @@ headers.NumPoints = int2str(size(image, 1));
 headers.NumProfiles = int2str(size(image, 2));
 
 append_headers(filename, headers);
-append_data(filename, image, headers);
+append_data(filename, image, headers, options);
 append_footer(filename, headers);
 end
 
@@ -32,14 +32,26 @@ function append_headers(filename, headers)
     fclose(fid);
 end
 
-function append_data(filename, image, headers)
+function append_data(filename, image, headers, options)
+    switch options.bits
+        case 32
+            format = '4';
+        case 16
+            format = '2';
+        otherwise
+            format = '4';
+    end    
+    floatFormat = strcat({'%.'}, {format}, {' '});
+    lineFormat = strjoin(repmat(floatFormat, 1, 7));
+    lineFormat = lineFormat(1:(end - 1));
+    
     fid = fopen(filename, 'a');
     
     nbPoints = str2double(headers.NumProfiles);
     
     for point = 1:nbPoints
         line = image(:,point);
-        fprintf(fid, '%.4f  %.4f %.4f %.4f %.4f %.4f %.4f\n', line);
+        fprintf(fid, strcat(lineFormat, '\n'), line);
     end
        
     fprintf(fid, '\n');
@@ -48,6 +60,6 @@ end
 
 function append_footer(filename, data)
     fid = fopen(filename, 'a');
-    fprintf(fid, '*\n\n*\n');
+    fprintf(fid, '*\n%s\n*\n', data);
     fclose(fid);
 end
