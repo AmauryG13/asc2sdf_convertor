@@ -8,6 +8,10 @@ classdef Convertor < handle
             'Delimiter', '\t', ...
             'DecimalSep', '.');
         
+        sdfOptions = struct( ... 
+            'bits', 32 ...
+        );
+        
         analysis = struct(...
             'clean', 1, ...
             'recenter', 1 ...
@@ -15,12 +19,16 @@ classdef Convertor < handle
     end
     
     methods
-        function self = Convertor(ascOptions, analysis)
+        function self = Convertor(ascOptions, sdfOptions, analysis)
             %CONVERTOR Construct an instance of this class
             %   Detailed explanation goes here
             
             if ~exist('ascOptions', 'var')
                 ascOptions = [];
+            end
+            
+            if ~exist('sdfOptions', 'var')
+                sdfOptions = [];
             end
             
             if ~exist('analysis', 'var')
@@ -30,6 +38,11 @@ classdef Convertor < handle
             self.ascOptions = utils.mergeStruct( ...
                 self.ascOptions, ...
                 ascOptions ...
+            );
+        
+            self.sdfOptions = utils.mergeStruct( ...
+                self.sdfOptions, ...
+                sdfOptions ...
             );
         
             self.analysis = utils.mergeStruct( ...
@@ -51,14 +64,14 @@ classdef Convertor < handle
             end
             
             if self.analysis.recenter
-                raw = utils.recenterAmplitude(raw);
+                [raw, scale] = utils.recenterAmplitude(raw);
             end
     
             switch ascHeaders.z_unit
                 case 'um'
-                    factor = 10^(-6);
+                    factor = 10^(-9);
                 otherwise
-                    factor = 10^(-6);
+                    factor = 10^(-9);
             end
     
             sdfHeaders = sdf.createHeadersStruct;
@@ -67,8 +80,8 @@ classdef Convertor < handle
                 [ ...
                 ((ascHeaders.x_length * factor)  / ascHeaders.x_pixels), ... X scale
                 ((ascHeaders.y_length * factor) / ascHeaders.y_pixels), ... Y scale
-                factor, ... Z scale
-                -1e+6 ... Z resolution
+                10^(-6), ... Z scale
+                -10^(-6) ... Z resolution
                 ] ...
             );
     
@@ -82,7 +95,7 @@ classdef Convertor < handle
             );
             
             try
-                sdf.write_image(sdfFilepath, sdfData);
+                sdf.write_image(sdfFilepath, sdfData, self.sdfOptions);
             catch ME
                 state = false;
             end
