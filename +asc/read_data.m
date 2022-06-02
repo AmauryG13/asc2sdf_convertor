@@ -1,0 +1,16 @@
+function data = read_data(filename, size, options)
+%READ_DATA Summary of this function goes here
+%   Detailed explanation goes here
+
+
+raw = readmatrix(filename, ...
+    'FileType', 'text', ...
+    'NumHeaderLines', options.Headers, ...
+    'Delimiter', options.Delimiter, ...
+    'DecimalSeparator', options.DecimalSep ...
+);
+
+ data = reshape(raw(1,:), size(1), size(2));
+    
+end
+
