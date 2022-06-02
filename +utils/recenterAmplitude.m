@@ -1,16 +1,18 @@
-function data = recenterAmplitude(raw)
+function [data, scale] = recenterAmplitude(raw)
 %RECENTERAMPLITUDE Summary of this function goes here
 %   Detailed explanation goes here
 
 z = reshape(raw, 1, []);
 zmean = mean(z);
 
-zmin = min(z);
-zmax = max(z);
+[zmin, zmax] = bounds(z);
 
-amplitude = [zmin - zmean, zmax - zmean]; 
+amplitude = [zmean - zmin, zmean - zmax]; 
 
-data = rescale(raw, amplitude(1), amplitude(2));
+data = rescale(raw, min(amplitude), max(amplitude));
+
+zs = sort(reshape(data, 1, []));
+scale = abs(zs(1) - zs(2));
 
 end
 

@@ -11,7 +11,7 @@ fIdx = cellfun(@(x) contains(x, '.asc'), {files(:).name});
 
 files = files(fIdx);
 
-convertor = Convertor;
+convertor = Convertor();
 
 for f = 1:length(files)
     filename = fullfile(files(f).folder, files(f).name);
