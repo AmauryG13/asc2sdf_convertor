@@ -54,7 +54,12 @@ classdef Convertor < handle
                 raw = utils.recenterAmplitude(raw);
             end
     
-            factor = double(unitConversionFactor(ascHeaders.z_unit, 'm'));
+            switch ascHeaders.z_unit
+                case 'um'
+                    factor = 10^(-6);
+                otherwise
+                    factor = 10^(-6);
+            end
     
             sdfHeaders = sdf.createHeadersStruct;
             sdfHeaders = sdf.popluateHeadersDefault(sdfHeaders);
@@ -71,7 +76,10 @@ classdef Convertor < handle
             sdfData.image = raw;
     
             [~, name] = fileparts(filepath);
-            sdfFilepath = fullfile(destFolder, strcat(name, '.sdf'));
+            sdfFilepath = utils.renameOutputFile( ...
+                destFolder, ...
+                strcat(name, '.sdf') ...
+            );
             
             try
                 sdf.write_image(sdfFilepath, sdfData);
