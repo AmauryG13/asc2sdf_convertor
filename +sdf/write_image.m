@@ -12,7 +12,9 @@ headers.NumProfiles = int2str(size(image, 2));
 
 append_headers(filename, headers);
 append_data(filename, image, headers, options);
-append_footer(filename, headers);
+append_footer(filename, options);
+
+fclose('all');
 end
 
 %%
@@ -41,9 +43,9 @@ function append_data(filename, image, headers, options)
         otherwise
             format = '4';
     end    
-    floatFormat = strcat({'%.'}, {format}, {' '});
+    floatFormat = strcat({'%.'}, {format}, {'f'}, {' '});
     lineFormat = strjoin(repmat(floatFormat, 1, 7));
-    lineFormat = lineFormat(1:(end - 1));
+    writeFormat = strcat(lineFormat(1:(end - 1)), '\n');
     
     fid = fopen(filename, 'a');
     
@@ -51,15 +53,25 @@ function append_data(filename, image, headers, options)
     
     for point = 1:nbPoints
         line = image(:,point);
-        fprintf(fid, strcat(lineFormat, '\n'), line);
+        fprintf(fid, writeFormat, line);
     end
        
     fprintf(fid, '\n');
     fclose(fid); 
 end
 
-function append_footer(filename, data)
+function append_footer(filename, options)
+    if isfield('footer', options)
+        data = options.footer;
+    else
+        data = '';
+    end
+
     fid = fopen(filename, 'a');
-    fprintf(fid, '*\n%s\n*\n', data);
+    
+    fprintf(fid, '*\n');
+    fprintf(fid, '%s', data); fprintf(fid, '\n');
+    fprintf(fid, '*\n');
+    
     fclose(fid);
 end
